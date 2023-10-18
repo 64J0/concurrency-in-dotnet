@@ -3,27 +3,30 @@
 open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
 
+let maxRange = 2_500_000
 let random = new Random()
-let getRandomNumber () = random.Next(-2_500_000, 2_500_000)
+let getRandomNumber () = random.Next(-maxRange, maxRange)
+let maxDepth = Math.Log(float Environment.ProcessorCount, 2.)
 
+[<MemoryDiagnoser>]
 type Quicksort() =
-    let _maxDepth = Math.Log(float Environment.ProcessorCount, 2.) + 4.
 
-    let _unsortedInput =
-        [ for i in 1..2_500_000 do
-              getRandomNumber () ]
+    [<Params (1000, 10000, 100000)>] 
+    member val ListSize :int = 0 with get, set
+
+    member self.unsortedList = [ for i in 1..self.ListSize do getRandomNumber () ]
 
     [<Benchmark(Baseline = true)>]
-    member _.ConcurrentQuicksort() =
-        QuicksortSequential.quicksortSequential _unsortedInput
+    member self.SequentialQuicksort() =
+        QuicksortSequential.quicksortSequential self.unsortedList
 
     [<Benchmark>]
-    member _.OverParallelQuicksort() =
-        QuicksortParallel.quicksortParallel _unsortedInput
+    member self.OverParallelQuicksort() =
+        QuicksortParallel.quicksortParallel self.unsortedList
 
     [<Benchmark>]
-    member _.ParallelQuicksort() =
-        QuicksortParallel.quicksortParallelWithDepth (int _maxDepth) _unsortedInput
+    member self.ParallelQuicksort() =
+        QuicksortParallel.quicksortParallelWithDepth (int maxDepth) self.unsortedList
 
 [<EntryPoint>]
 let main (_args: string[]) : int =
