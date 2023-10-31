@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID:       325def2f-c0e0-4e01-955f-6e7469641f2f
+:END:
+#+title: [Book] Concurrency in .NET
+#+startup: overview
+
+Author: Riccardo Terrell
+Title: [Book] Concurrency in .NET
+Year: 2018
+
+GitHub repository: [[https://github.com/64J0/concurrency-in-dotnet][link]].
+
+* Summary
+
+This book presents concurrency techniques using .NET, leveraging the functional
+paradigm mainly. Why should someone learn concurrency techniques? By using
+concurrent solutions we can take advantage of the multi-core processors which
+are common nowadays.
+
+We can use concurrency in an application to increase performance and
+responsiveness, and to achieve low latency.
+
+* Concurrency Terminology
+
++ *Sequential programming:* performs one task at a time. This programming model
+  involves a consecutive, progressively ordered execution of processes, one
+  instruction at a time in a linear fashion.
+  
++ *Concurrent programming:* runs multiple tasks at the same time. Concurrency
+  describes the ability to run several programs or multiple parts of a program
+  at the same time.
+
+  In computer programming, using concurrency within an application provides
+  actual multitasking, dividing the application into multiple and independent
+  processes that run at the same time (concurrently) in different threads. This
+  can happen either in a single CPU core or in parallel, if multiple CPU cores
+  are available. The throughput (the rate at which the CPU processes a
+  computation) and responsiveness of the program can be improved through the
+  asynchronous or parallel execution of a task.
+
++ *Parallel programming:* executes multiple tasks simultaneously. Parallelism is
+  the concept of executing multiple tasks at once concurrently, literally at the
+  same time on different cores, to improve the speed of the application.
+
+  Although all parallel programs are concurrent, not all concurrent programs are
+  parallel. In a single core processor, even though it looks like there are
+  multiple programs running at the same time, in fact it's more like
+  multitasking, where each part of a bigger task runs at a moment (notice that
+  context switch is an expensive operation).
+
+  Parallelism is only achievable in multi-core devices, maximizing the use of
+  all available computational resources.
+
++ *Multitasking:* performs multiple tasks concurrently over time. It's the
+  concept of performing multiple tasks over a period of time by executing them
+  concurrently.
+
+  In a single-core computer, it's possible that multitasking can slow down the
+  performance of a program by introducing extra overhead for context switching
+  between threads.
+
++ *Multithreading:* is an extension of the concept of multitasking, aiming to
+  improve the performance of a program by maximizing and optimizing computer
+  resources. It enables an application to explicitly subdivide specific tasks
+  into individual threads that run in parallel within the same process.
+
+  A process is an instance of a program running within a computer system. Each
+  process has one of more threads of execution, and no thread can exist outside
+  a process.
+
+  A thread is a unit of computation (an independent set of programming
+  instructions designed to achieve a particular result), which the operating
+  system scheduler independently executes and manages.
+
+  The concepts of parallel and multithreading programming are closely
+  related. But in contrast to parallelism, multithreading is hardware-agnostic,
+  which means that it can be performed regardless of the number of cores
+
+* Functional Programming Techniques for Concurrency
+
+** Closures
+
+Closures are a convenient way to give functions access to local state and to
+pass data into background operations. [...] Moreover, a closure allows a
+function to access one or more non-local variables even when invoked outside its
+immediate lexical scope, and the body of this special function can transport
+these free variables as a single entity, defined in its enclosing scope.
+
+#+BEGIN_COMMENT
+Isn't this technique failing the functional paradigm by relying on mutable data,
+and more critical, making the function impure due to side effects?
+#+END_COMMENT
+
+The power of closures emerges when the same variable can be used even when it
+would have gone out of scope. Because the variable has been captured, it isn't
+garbage collected.
+
+Regarding the captured variable, notice that it works like a pointer (a
+reference) to that variable data, so *it contains the value by the time of
+evaluation instead of the value by the time of capture*.
+
+To exemplify:
+
+#+BEGIN_SRC fsharp :tangle no
+  open System.Threading
+  open System.Threading.Tasks
+
+  let example3 () =
+      let displayNumber = fun n -> printfn "%i" n
+      let mutable i = 5
+      let taskOne = Task.Factory.StartNew(fun () -> displayNumber i)
+      i <- 7
+      let taskTwo = Task.Factory.StartNew(fun () -> displayNumber i)
+
+      Task.WaitAll(taskOne, taskTwo)
+
+  example3 ()
+  // 7
+  // 7
+#+END_SRC
+
+In FP, closures are commonly used to manage mutable state to limit and isolate
+the scope of mutable structures, allowing thread-safe access. This fits well in
+a multi-thread environment.
+
+But keep in mind that the compiler handles closures by allocating an object that
+encapsulates the function and its environment. Therefore, closures are heavier
+in terms of memory allocations than regular functions, and invoking them is
+slower.
+
+** Memoization or tabling
+
+Memoization, also known as tabling, is a technique that increases the
+performance of an application by caching the result of a function, avoiding
+unnecessary extra computational overhead that originates from repeating the same
+computations.
+
+A memoized function keeps in memory the result of a computation so it can be
+returned immediately in future calls.
+
+Example:
+
+#+BEGIN_SRC fsharp :tangle no
+  open System.Collections.Generic
+  open System.Threading
+
+  let memoize func =
+      let table = Dictionary<_, _>()
+
+      fun x ->
+          if table.ContainsKey(x) then
+              table.[x]
+          else
+              let result = func x
+              table.[x] <- result
+              result
+
+  let funcImp =
+      fun number ->
+          Thread.Sleep 2000
+          number * 2
+
+  let memoizedFunc = memoize funcImp
+
+  #time "on"
+  memoizedFunc 10
+  // Real: 00:00:02.004, CPU: 00:00:00.090, GC gen0: 0, gen1: 0, gen2: 0
+  // 20
+
+  memoizedFunc 10
+  // Real: 00:00:00.004, CPU: 00:00:00.010, GC gen0: 0, gen1: 0, gen2: 0
+  // 20
+
+  memoizedFunc 20
+  // Real: 00:00:02.002, CPU: 00:00:00.090, GC gen0: 0, gen1: 0, gen2: 0
+  // 40
+#+END_SRC
+
+** Lazy Memoization
