@@ -17,6 +17,10 @@ let example2 () =
 
 example2 ()
 
+// In theory it would print the number 10 ten times. The explanation is that the iteration kept running
+// in the foreground while the new tasks were scheduled to run in the background. I assume it takes more
+// time to start and run the new tasks, so when they're started the iteration already reached the end.
+
 let example3 () =
     let displayNumber = fun n -> printfn "%i" n
     let mutable i = 5
