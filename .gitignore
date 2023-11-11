@@ -1,3 +1,5 @@
 bin/
 obj/
 */BenchmarkDotNet.Artifacts/*.log
+*/BenchmarkDotNet.Artifacts/results/*.html
+*/BenchmarkDotNet.Artifacts/results/*.csv
