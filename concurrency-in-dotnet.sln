@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Quicksort", "Quicksort\Quicksort.fsproj", "{F0708188-4BB6-47BA-8CEB-9570A4DE4FBC}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "IPParallelSimpleValidation", "IPParallelSimpleValidation\IPParallelSimpleValidation.fsproj", "{CFCADF2D-487E-4D12-8985-3FCAC855C186}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{F0708188-4BB6-47BA-8CEB-9570A4DE4FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0708188-4BB6-47BA-8CEB-9570A4DE4FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0708188-4BB6-47BA-8CEB-9570A4DE4FBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFCADF2D-487E-4D12-8985-3FCAC855C186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFCADF2D-487E-4D12-8985-3FCAC855C186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFCADF2D-487E-4D12-8985-3FCAC855C186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFCADF2D-487E-4D12-8985-3FCAC855C186}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
